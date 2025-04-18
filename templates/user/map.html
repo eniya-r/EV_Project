@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map - Nearby EV Charging Stations</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #mapContainer {
+            height: 100vh; /* Full height for the map */
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapContainer"></div>
+
+    <script>
+        let map;
+
+        // Function to initialize the map
+        function initMap() {
+            // Get the user's current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Initialize the map centered on the user's location
+                    map = L.map('mapContainer').setView([lat, lng], 13);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                    }).addTo(map);
+
+                    // Fetch nearby stations based on the current location
+                    fetchNearbyStations(lat, lng);
+                }, function() {
+                    alert('Unable to retrieve your location.');
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        async function fetchNearbyStations(lat, lng) {
+            try {
+                const response = await fetch(`/stations?lat=${lat}&lng=${lng}&range=10`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayStationsOnMap(data);
+            } catch (error) {
+                console.error('Error fetching nearby stations:', error);
+                alert('Failed to fetch nearby stations: ' + error.message);
+            }
+        }
+
+        function displayStationsOnMap(stations) {
+            // Clear existing markers if needed
+            if (map.markers) {
+                map.markers.forEach(marker => map.removeLayer(marker));
+            } else {
+                map.markers = []; // Initialize markers array
+            }
+
+            // Add a marker for the user's location
+            const userMarker = L.marker([map.getCenter().lat, map.getCenter().lng]).addTo(map).bindPopup('Your Location').openPopup();
+
+            // Add markers for each station
+            stations.forEach(station => {
+                const stationLat = station.AddressInfo.Latitude;
+                const stationLng = station.AddressInfo.Longitude;
+                const stationName = station.AddressInfo.Title;
+
+                const stationMarker = L.marker([stationLat, stationLng]).addTo(map).bindPopup(stationName);
+                map.markers.push(stationMarker); // Store the station marker
+            });
+        }
+
+        // Initialize the map when the page loads
+        window.onload = initMap;
+    </script>
+</body>
+</html>

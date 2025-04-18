@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Vehicle Battery Range Predictor</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            padding: 10px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            padding: 8px 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 8px;
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Electric Vehicle Battery Range Predictor</h1>
+    <div class="form-group">
+        <label for="topSpeed">Top Speed (Km/h):</label>
+        <input type="number" id="topSpeed" required>
+    </div>
+    <div class="form-group">
+        <label for="acceleration">Acceleration (Sec):</label>
+        <input type="number" id="acceleration" required>
+    </div>
+    <div class="form-group">
+        <label for="efficiency">Efficiency (Wh/km):</label>
+        <input type="number" id="efficiency" required>
+    </div>
+    <div class="form-group">
+        <label for="seats">Number of Seats:</label>
+        <input type="number" id="seats" required>
+    </div>
+    <div class="form-group">
+        <label for="brand">Brand:</label>
+        <select id="brand" required>
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="powerTrain">Power Train:</label>
+        <select id="powerTrain" required>
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="bodyStyle">Body Style:</label>
+        <select id="bodyStyle" required>
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="segment">Segment:</label>
+        <select id="segment" required>
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="soc">State of Charge (%):</label>
+        <input type="number" id="soc" required>
+    </div>
+    <button onclick="predictRange()">Predict Battery Range</button>
+
+    <div class="result" id="result" style="display:none;"></div>
+    <div id="mapContainer" style="height: 500px; width: 100%;"></div>
+
+    <script>
+        let map; // Declare the map variable outside the function
+
+        // Function to populate select options
+        async function populateOptions() {
+            const response = await fetch('/options'); // Endpoint to get options
+            const options = await response.json();
+
+            const brandSelect = document.getElementById('brand');
+            const powerTrainSelect = document.getElementById('powerTrain');
+            const bodyStyleSelect = document.getElementById('bodyStyle');
+            const segmentSelect = document.getElementById('segment');
+
+            options.brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand;
+                option.textContent = brand;
+                brandSelect.appendChild(option);
+            });
+
+            options.powerTrains.forEach(powerTrain => {
+                const option = document.createElement('option');
+                option.value = powerTrain;
+                option.textContent = powerTrain;
+                powerTrainSelect.appendChild(option);
+            });
+
+            options.bodyStyles.forEach(bodyStyle => {
+                const option = document.createElement('option');
+                option.value = bodyStyle;
+                option.textContent = bodyStyle;
+                bodyStyleSelect.appendChild(option);
+            });
+
+            options.segments.forEach(segment => {
+                const option = document.createElement('option');
+                option.value = segment;
+                option.textContent = segment;
+                segmentSelect.appendChild(option);
+            });
+        }
+
+        async function predictRange() {
+            const topSpeed = document.getElementById('topSpeed').value;
+            const acceleration = document.getElementById('acceleration').value;
+            const efficiency = document.getElementById('efficiency').value;
+            const seats = document.getElementById('seats').value;
+            const brand = document.getElementById('brand').value;
+            const powerTrain = document.getElementById('powerTrain').value;
+            const bodyStyle = document.getElementById('bodyStyle').value;
+            const segment = document.getElementById('segment').value;
+            const soc = document.getElementById('soc').value;
+
+            const newData = {
+                topSpeed: parseFloat(topSpeed),
+                acceleration: parseFloat(acceleration),
+                efficiency: parseFloat(efficiency),
+                seats: parseInt(seats),
+                brand: brand,
+                powerTrain: powerTrain,
+                bodyStyle: bodyStyle,
+                segment: segment,
+                soc: parseFloat(soc)
+            };
+
+            // Send the data to the backend for prediction
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'An error occurred');
+                }
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <strong>Battery Range:</strong> ${result.predictedRange.toFixed(2)} km<br>
+                    <strong>Remaining Battery Range at ${soc}% SoC:</strong> ${result.remainingRange.toFixed(2)} km
+                `;
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <strong>Error:</strong> ${error.message}
+                `;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+
+        // Call populateOptions on page load
+        window.onload = populateOptions;
+
+        document.getElementById('findStationsButton').addEventListener('click', function() {
+            getCurrentLocation();
+        });
+
+        async function fetchNearbyStations(lat, lng) {
+            console.log(`Fetching nearby stations for lat: ${lat}, lng: ${lng}`);
+            
+            try {
+                const response = await fetch(`/stations?lat=${lat}&lng=${lng}&range=10`);
+                
+                console.log('Response status:', response.status); // Log the response status
+                
+                if (!response.ok) {
+                    const errorText = await response.text(); // Get the error response text
+                    console.error('Error response:', errorText); // Log the error response
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                console.log('Fetched stations data:', data); // Log the fetched data
+                displayStationsOnMap(data, lat, lng);
+            } catch (error) {
+                console.error('Error fetching nearby stations:', error);
+                alert('Failed to fetch nearby stations: ' + error.message);
+            }
+        }
+
+        function displayStationsOnMap(stations, userLat, userLng) {
+            // Check if the map is already initialized
+            if (!map) {
+                // Initialize the map centered on the user's location
+                map = L.map('mapContainer').setView([userLat, userLng], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                }).addTo(map);
+            } else {
+                // If the map is already initialized, just set the view to the user's location
+                map.setView([userLat, userLng], 13);
+            }
+
+            // Clear existing markers if needed
+            if (map.markers) {
+                map.markers.forEach(marker => map.removeLayer(marker));
+            } else {
+                map.markers = []; // Initialize markers array
+            }
+
+            // Add a marker for the user's location (default red pointer)
+            L.marker([userLat, userLng]).addTo(map).bindPopup('Your Location').openPopup();
+
+            // Add markers for each station (default blue pointers)
+            stations.forEach(station => {
+                const stationLat = station.AddressInfo.Latitude;
+                const stationLng = station.AddressInfo.Longitude;
+                const stationName = station.AddressInfo.Title;
+
+                L.marker([stationLat, stationLng]).addTo(map).bindPopup(stationName);
+            });
+        }
+
+        // Function to get the user's current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Fetch nearby stations based on the current location
+                    fetchNearbyStations(lat, lng);
+                }, function() {
+                    alert('Unable to retrieve your location.');
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        // Call getCurrentLocation when the page loads or when a button is clicked
+        document.addEventListener('DOMContentLoaded', getCurrentLocation); // Automatically fetch on page load
+    </script>
+</body>
+</html>
