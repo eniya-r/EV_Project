@@ -35,7 +35,7 @@
     <div class="container">
       
       <h1>Find Your Charge Point</h1>
-      <form action="{{ url_for('search_stations') }}" method="post">
+      <form action="{{ url_for('station_search') }}" method="get">
         <label for="City">Select a City: </label>
         <select id="City" name="City" required>
           <option value="">--Select a City--</option>
@@ -70,7 +70,7 @@
           <option value="DC Fast Charging">DC Fast Charging</option>
         </select>
         <br />
-        <button id="book" type="submit"> Search  </button>
+        <button type="submit">Search</button>
       </form>
   </main>
 
