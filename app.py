@@ -374,13 +374,21 @@ def user_find_your_charger():
         if request.method == 'POST':
             city = request.form.get('City')
             charger_type = request.form.get('Charger_type')
-            print(f"City: {city}, Charger Type: {charger_type}")  # Debugging line
+            print(f"User Find Your Charger Called")  # Log statement to indicate function call
+            print(f"City: {city}, Charger Type: {charger_type}")  # Log the values received from the form
+            
             db = Db()
-            qry = db.select("SELECT Station_name, Address, Charger_type, Available_ports FROM admin_charging_station_list WHERE City = %s AND Charger_type = %s", (city, charger_type))
-            return render_template('user/station_search.html', data=qry)       
-        else:
-            return render_template('user/user_find_your_charger.html')
+            qry = db.select("SELECT station_name, address, charger_type, no_of_ports FROM admin_charging_station_list WHERE city = %s AND charger_type = %s", (city, charger_type))
+            print(f"Query Result: {qry}")  # Log the query result
+            
+            if qry:  # Check if the query returned any results
+                return render_template('user/station_search.html', data=qry, City=city, Charger_type=charger_type)
+            else:
+                print("No results found for the query.")  # Log statement for no results
+                return render_template('user/station_search.html', data=[], City=city, Charger_type=charger_type)  # No results found
+        return render_template('user/user_find_your_charger.html')  # Render the form page
     else:
+        print("User not logged in or not a user type.")  # Log statement for unauthorized access
         return redirect('/')
 
 
@@ -399,16 +407,22 @@ def search_stations():
 @app.route('/station_search', methods=['GET'])
 def station_search():
     if 'user_type' in session and session['user_type'] == 'user':
-        City = request.args.get('City')
-        Charger_type = request.args.get('Charger_type')
-        # Query your MySQL database using the city and charge_type variables
+        city = request.args.get('City')
+        charger_type = request.args.get('Charger_type')
+        print(f"Station Search Called")  # Log statement to indicate function call
+        print(f"City: {city}, Charger Type: {charger_type}")  # Log the values received from the query
+        
         db = Db()
-        sql = "select * from admin_charging_station_list where City = %s and Charger_type = %s"
-        ss = db.select(sql, (City, Charger_type))
-
-        # Return the results to the user in a new template
-        return render_template('user/station_search.html', data=ss, City=City, Charger_type=Charger_type)
+        qry = db.select("SELECT station_name, address, charger_type, no_of_ports FROM admin_charging_station_list WHERE city = %s AND charger_type = %s", (city, charger_type))
+        print(f"Query Result: {qry}")  # Log the query result
+        
+        if qry:  # Check if the query returned any results
+            return render_template('user/station_search.html', data=qry, City=city, Charger_type=charger_type)
+        else:
+            print("No results found for the query.")  # Log statement for no results
+            return render_template('user/station_search.html', data=[], City=city, Charger_type=charger_type)  # No results found
     else:
+        print("User not logged in or not a user type.")  # Log statement for unauthorized access
         return redirect('/')
 
 # ==============from station_search to booking page====================
@@ -525,7 +539,7 @@ def get_directions():
         if not all([start_lat, start_lng, end_lat, end_lng]):
             return jsonify({'error': 'Start and end coordinates are required.'}), 400
 
-        url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key=b8f317c7-3dbb-4a92-bb7c-995c95a0e058&start={start_lng},{start_lat}&end={end_lng},{end_lat}"
+        url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248a01d6e78f9a549b1adfc9c00dc29a048&start={start_lng},{start_lat}&end={end_lng},{end_lat}"
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad responses
         route = response.json()
