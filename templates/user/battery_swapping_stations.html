@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Battery Swapping Stations Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+    <!-- Include Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh2pabbuD4GlWIDdSUzxydjG5KzsbXupA"></script>
+</head>
+<body>
+    <h1>Battery Swapping Stations Map</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([{{ user_lat }}, {{ user_lng }}], 13); // Center on user's location
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Add battery swapping stations to the map
+        const stations = {{ stations | tojson }};
+        stations.forEach(station => {
+            const lat = station.AddressInfo.Latitude;
+            const lng = station.AddressInfo.Longitude;
+            const name = station.AddressInfo.Title;
+
+            // Add marker for each station
+            const marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(name);
+
+            // Add click event to show buttons
+            marker.on('click', function() {
+                showStationButtons(lat, lng, name);
+            });
+        });
+
+        function showStationButtons(lat, lng, name) {
+            // Clear existing buttons
+            document.getElementById('directionsPanel').innerHTML = '';
+
+            // Create Directions button
+            const directionsButton = document.createElement('button');
+            directionsButton.innerText = 'Directions';
+            directionsButton.style.backgroundColor = 'green';
+            directionsButton.style.color = 'white';
+            directionsButton.onclick = function() {
+                fetchDirections({{ user_lat }}, {{ user_lng }}, lat, lng);
+            };
+
+            // Create Book a Slot button
+            const bookButton = document.createElement('button');
+            bookButton.innerText = 'Book a Slot';
+            bookButton.style.backgroundColor = 'green';
+            bookButton.style.color = 'white';
+            bookButton.onclick = function() {
+                window.location.href = `/booking-form?Station_name=${name}&City={{ user_city }}&Available_ports=1`; // Adjust as necessary
+            };
+
+            // Append buttons to the directions panel
+            const directionsPanel = document.getElementById('directionsPanel');
+            directionsPanel.appendChild(directionsButton);
+            directionsPanel.appendChild(bookButton);
+        }
+
+        function fetchDirections(startLat, startLng, endLat, endLng) {
+            const url = `/directions?start_lat=${startLat}&start_lng=${startLng}&end_lat=${endLat}&end_lng=${endLng}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    if (!data.routes || data.routes.length === 0) {
+                        alert('No routes found.');
+                        return;
+                    }
+                    drawRoute(data.routes[0].geometry.coordinates);
+                })
+                .catch(error => {
+                    console.error('Error fetching directions:', error);
+                    alert('Failed to fetch directions: ' + error.message);
+                });
+        }
+
+        function drawRoute(routeCoords) {
+            const latLngs = routeCoords.map(coord => [coord[1], coord[0]]); // Convert to [lat, lng]
+            L.polyline(latLngs, { color: 'red', weight: 5 }).addTo(map);
+            map.fitBounds(latLngs); // Adjust map view to show the route
+        }
+    </script>
+</body>
+</html>

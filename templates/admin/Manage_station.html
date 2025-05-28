@@ -52,7 +52,6 @@
     <a href="/view_booking" class="list-group-item list-group-item-action bg-light">View Booking</a>
     <a href="/view_feedback" class="list-group-item list-group-item-action bg-light">View Feedback</a>
     <a href="/logout" class="list-group-item list-group-item-action bg-light">Logout</a>
-
    
     
   </div>
@@ -100,13 +99,13 @@
       {% for i in data %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td>{{ i.station_name }}</td>
-      <td>{{ i.address }}</td>
-      <td>{{ i.city }}</td>
-      <td>{{ i.charger_type }}</td>
-      <td>{{ i.available_ports }}</td>
-      <td>{{ i.status }}</td>
-      <td><p><a href="/adm_delete_station/{{ i.station_name }}" class="btn btn-dark">Remove</button></td>
+      <td>{{ i.Station_name }}</td>
+      <td>{{ i.Address }}</td>
+      <td>{{ i.City }}</td>
+      <td>{{ i.Charger_type }}</td>
+      <td>{{ i.Available_ports }}</td>
+      <td>{{ i.Status }}</td>
+      <td><p><a href="/adm_delete_station/{{ i.Station_name }}" class="btn btn-dark">Remove</a></p></td>
       <!--       <input type="Remove" value="Send">  -->
         <!-- <td>&nbsp;{{ i.area }}</td> -->
      <!-- <td>&nbsp;{{ i.city }}</td>

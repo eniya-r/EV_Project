@@ -42,16 +42,37 @@
             font-weight: bold;
             color: #007bff; /* Blue color for estimated time */
         }
+        #stationButtons {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .station-btn {
+            background-color: #28a745; /* Bootstrap green */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div id="mapContainer"></div>
     <div id="directionsPanel"></div>
+    <!-- Removed separate buttons container div -->
 
     <script>
         let map;
         let userLatLng;
         let selectedStationLatLng;
+        let selectedStationName;
+        let selectedStationCity;
+        let selectedStationAvailablePorts;
         let routeLayer;
 
         function initMap() {
@@ -109,14 +130,56 @@
                 const stationLat = station.AddressInfo.Latitude;
                 const stationLng = station.AddressInfo.Longitude;
                 const stationName = station.AddressInfo.Title;
+                const stationCity = station.AddressInfo.Town || '';
+                const availablePorts = station.NumberOfPoints || 1;
 
-                const stationMarker = L.marker([stationLat, stationLng]).addTo(map).bindPopup(stationName);
-                stationMarker.on('click', function() {
+                const popupContent = `
+                    <div>
+                        <strong>${stationName}</strong><br/>
+                        <button class="btnDirections" style="background-color: #28a745; color: white; border: none; padding: 5px 10px; margin-right: 5px; border-radius: 3px; cursor: pointer;">Directions</button>
+                        <button class="btnBookSlot" style="background-color: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Book a Slot</button>
+                    </div>
+                `;
+
+                const stationMarker = L.marker([stationLat, stationLng]).addTo(map).bindPopup(popupContent);
+
+                stationMarker.on('popupopen', function(e) {
                     selectedStationLatLng = [stationLat, stationLng];
-                    alert(`Selected station: ${stationName}. Click 'Get Directions' to see the route.`);
+                    selectedStationName = stationName;
+                    selectedStationCity = stationCity;
+                    selectedStationAvailablePorts = availablePorts;
+
+                    const popupNode = e.popup.getElement();
+
+                    const btnDirections = popupNode.querySelector('.btnDirections');
+                    const btnBookSlot = popupNode.querySelector('.btnBookSlot');
+
+                    if (btnDirections) {
+                        btnDirections.addEventListener('click', () => {
+                            getDirections();
+                        });
+                    }
+
+                    if (btnBookSlot) {
+                        btnBookSlot.addEventListener('click', () => {
+                            const url = `/booking-form?Station_name=${encodeURIComponent(selectedStationName)}&City=${encodeURIComponent(selectedStationCity)}&Available_ports=${encodeURIComponent(selectedStationAvailablePorts)}`;
+                            window.location.href = url;
+                        });
+                    }
                 });
+
                 map.markers.push(stationMarker);
             });
+        }
+
+        function showStationButtons() {
+            const btnContainer = document.getElementById('stationButtons');
+            btnContainer.style.display = 'flex';
+        }
+
+        function hideStationButtons() {
+            const btnContainer = document.getElementById('stationButtons');
+            btnContainer.style.display = 'none';
         }
 
         async function getDirections() {
@@ -224,23 +287,10 @@
             return '';
         }
 
+        // Removed global event listeners for btnDirections and btnBookSlot as they are handled inside popupopen event
+
         window.onload = function() {
             initMap();
-
-            const btn = document.createElement('button');
-            btn.textContent = 'Get Directions';
-            btn.style.position = 'absolute';
-            btn.style.bottom = '20px';
-            btn.style.right = '20px';
-            btn.style.zIndex = 1000;
-            btn.style.backgroundColor = 'green';
-            btn.style.color = 'white';
-            btn.style.border = 'none';
-            btn.style.padding = '10px 20px';
-            btn.style.borderRadius = '5px';
-            btn.style.cursor = 'pointer';
-            btn.onclick = getDirections;
-            document.body.appendChild(btn);
         };
     </script>
 </body>

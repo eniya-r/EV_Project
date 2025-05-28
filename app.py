@@ -228,9 +228,9 @@ def admin_home():
 def Manage_station():
     print('session ', session)
     if session['user_type'] == 'admin':
-        db=Db()
-        qry=db.select("select station_id, station_name, address, city, charger_type, available_ports, status from admin_charging_station_list")
-        return render_template("admin/Manage_station.html",data=qry)
+        db = Db()
+        qry = db.select("SELECT Station_name, Address, City, Charger_type, Status FROM admin_charging_station_list")
+        return render_template("admin/Manage_station.html", data=qry)
     else:
         return redirect('/')
 
@@ -480,16 +480,7 @@ def book():
         booking_id = db.insert(sql, (station_name, city, available_ports, booking_date, time_from, time_to, created_at, login_id))
 
         # redirect the user to their dashboard
-        return render_template("user/user-login-dashboard.html", data={
-            'Station_name': station_name,
-            'City': city,
-            'Available_ports': available_ports,
-            'Booking_date': booking_date,
-            'Time_from': time_from,
-            'Time_to': time_to,
-            'Created_id': created_at,
-            'Booking_id': booking_id
-        })
+        return redirect('/user-dashboard')
     else:
         return redirect('/booking-form')
 
@@ -520,7 +511,22 @@ def get_stations():
         response = requests.get(url)
         response.raise_for_status()
         stations = response.json()
-        
+
+        # Save stations to database
+        db = Db()
+        for station in stations:
+            station_name = station.get('AddressInfo', {}).get('Title', 'Unknown')
+            address = station.get('AddressInfo', {}).get('AddressLine1', 'Unknown')
+            city = station.get('AddressInfo', {}).get('Town', 'Unknown')
+            charger_type = ', '.join([conn.get('ConnectionType', {}).get('Title', '') for conn in station.get('Connections', []) if conn.get('ConnectionType')]) or 'Unknown'
+            no_of_ports = len(station.get('Connections', []))
+
+            # Check if station already exists to avoid duplicates
+            existing = db.select("SELECT * FROM admin_charging_station_list WHERE Station_name = %s AND Address = %s", (station_name, address))
+            if not existing:
+                db.insert("INSERT INTO admin_charging_station_list (Station_name, Address, City, Charger_type, Status, no_of_ports) VALUES (%s, %s, %s, %s, %s, %s)",
+                          (station_name, address, city, charger_type, 'Available', no_of_ports))
+
         return jsonify(stations)
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
