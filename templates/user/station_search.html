@@ -1,77 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">  
-  <link rel="stylesheet" href="/static/user/station_search.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel=" icon" href="/static/temp/assets/images/icon.ico"/>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EV Charging Stations Booking</title>
 
-  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" crossorigin="anonymous">
+  <!-- External Styles & Icons -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+  <link rel="stylesheet" href="/static/user/station_search.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="icon" href="/static/temp/assets/images/icon.ico" />
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" />
 </head>
 
-<header>
-  <nav>
-    <ul>
-      <li><a href="{{ url_for('home') }}">Home</a></li>
-      <li><a href="{{ url_for('about') }}">About</a></li>
-      <li><a href="{{ url_for('contact_us') }}">Contact us</a></li>
-    </ul>
-  </nav>
-</header>
-
 <body>
-  <h1>EV Charging Stations Booking</h1>
-  <p><strong>You have selected the following options:<br><br></strong></p>
-  <ul>
-    <li><strong>City:<br><br> {{ City }} </strong></li><br>
-    <li><strong>Charging Type:<br><br> {{ Charger_type }} </strong></li><br>
-  </ul>
-  
-  <p>Please select a charging station from the list below:<br><br></p>
-  <div id="map" style="height: 500px; width: 100%; margin-bottom: 20px;"></div>
-  <table id="myTable" class="display">
-    <thead>
-      <tr>
-        <th>Station Name</th>
-        <th>City</th>
-        <th>Address</th>
-        <th>Charge Type</th>
-        <th>Available Ports</th>
-        <th style="width: 10%" orderable="false">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if data %}
-        {% for station in data %}
+  <!-- HEADER -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">Electric Vehicle Services</div>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="cta">Home</a></li>
+        <li><a href="{{ url_for('about') }}" class="cta">About</a></li>
+        <li><a href="{{ url_for('contact_us') }}" class="cta">Contact</a></li>
+      
+      </ul>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <section class="section-heading">
+    <h2>EV Charging Station Booking</h2>
+    <p><strong>You have selected the following options:</strong></p>
+    <p><strong>City:</strong> {{ City }}</p>
+    <p><strong>Charging Type:</strong> {{ Charger_type }}</p>
+    <p><strong>Please select a charging station from the list below:</strong></p>
+  </section>
+
+  <div id="map"></div>
+
+  <div class="table-responsive">
+    <table id="myTable" class="display table table-striped table-bordered">
+      <thead class="thead-dark">
         <tr>
-          <td>{{ station.station_name }}</td>
-          <td>{{ station.city }}</td>
-          <td>{{ station.address }}</td>
-          <td>{{ station.charger_type }}</td>
-          <td>{{ station.no_of_ports }}</td>
-          <td>
-            <button class="book-now-btn" data-station="{{ station.station_name }}" data-city="{{ station.city }}" data-available-ports="{{ station.no_of_ports }}">Book a Slot</button>
-          </td>
+          <th>Station Name</th>
+          <th>City</th>
+          <th>Address</th>
+          <th>Charge Type</th>
+          <th>Available Ports</th>
+          <th style="width: 12%;">Actions</th>
         </tr>
-        {% endfor %}
-      {% else %}
-        <tr>
-          <td colspan="6">No charging stations found for the selected criteria.</td>
-        </tr>
-      {% endif %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% if data %}
+          {% for station in data %}
+          <tr>
+            <td>{{ station.Station_name }}</td>
+            <td>{{ station.City }}</td>
+            <td>{{ station.Address }}</td>
+            <td>{{ station.Charger_type }}</td>
+            <td>{{ station.Available_ports }}</td>
+            <td>
+              <a
+                href="{{ url_for('booking', Station_name=station.Station_name, City=station.City, Available_ports=station.Available_ports) }}"
+                class="btn btn-primary btn-sm"
+              >Book a Slot</a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="text-center">No charging stations found for the selected criteria.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <h3>Electric Vehicle Services</h3>
+      <p>Your one-stop solution for electric vehicle charging and assistance.</p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EV Project | Built by Team 84</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"></script>
+
   <script>
-    $(document).ready(function() {
-      $('#myTable').DataTable();
+    $(document).ready(function () {
+      $('#myTable').DataTable({
+        "order": [],
+        columnDefs: [
+          { orderable: false, targets: 5 }
+        ]
+      });
     });
   </script>
 </body>
+</html>

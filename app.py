@@ -333,7 +333,7 @@ def user_dashboard():
         username = session['username']  # get the username from the session
         if 'uid' in session:  # Check if 'uid' exists
             db = Db()
-            bookings = db.select("SELECT * FROM booking WHERE login_id = %s ORDER BY Booking_date DESC;", (session['uid'],))
+            bookings = db.select("select * from booking where login_id = '%s' order by Booking_date desc;", (session['uid'],))
             return render_template("user/user-login-dashboard.html", bookings=bookings, username=username)
         else:
             return redirect('/')  # Redirect if uid is not set
@@ -378,7 +378,7 @@ def user_find_your_charger():
             print(f"City: {city}, Charger Type: {charger_type}")  # Log the values received from the form
             
             db = Db()
-            qry = db.select("SELECT station_name, address, charger_type, no_of_ports FROM admin_charging_station_list WHERE city = %s AND charger_type = %s", (city, charger_type))
+            qry = db.select("SELECT Station_name, Address, Charger_type, Available_ports FROM admin_charging_station_list WHERE city = %s AND charger_type = %s", (city, charger_type))
             print(f"Query Result: {qry}")  # Log the query result
             
             if qry:  # Check if the query returned any results
@@ -413,7 +413,7 @@ def station_search():
         print(f"City: {city}, Charger Type: {charger_type}")  # Log the values received from the query
         
         db = Db()
-        qry = db.select("SELECT station_name, address, charger_type, no_of_ports FROM admin_charging_station_list WHERE city = %s AND charger_type = %s", (city, charger_type))
+        qry = db.select("SELECT Station_name, Address, Charger_type, Available_ports  FROM admin_charging_station_list WHERE city = %s AND charger_type = %s", (city, charger_type))
         print(f"Query Result: {qry}")  # Log the query result
         
         if qry:  # Check if the query returned any results
@@ -487,6 +487,7 @@ def book():
 
 OPENCHARGEMAP_API_KEY = "b8f317c7-3dbb-4a92-bb7c-995c95a0e058" 
 
+
 @app.route('/nearby-stations')
 def nearby_stations():
     return render_template('user/map.html')
@@ -519,14 +520,14 @@ def get_stations():
             address = station.get('AddressInfo', {}).get('AddressLine1', 'Unknown')
             city = station.get('AddressInfo', {}).get('Town', 'Unknown')
             charger_type = ', '.join([conn.get('ConnectionType', {}).get('Title', '') for conn in station.get('Connections', []) if conn.get('ConnectionType')]) or 'Unknown'
-            no_of_ports = len(station.get('Connections', []))
+            Available_ports = len(station.get('Connections', []))
 
             # Check if station already exists to avoid duplicates
             try:
                 existing = db.select("SELECT * FROM admin_charging_station_list WHERE Station_name = %s AND Address = %s", (station_name, address))
                 if not existing:
-                    db.insert("INSERT INTO admin_charging_station_list (Station_name, Address, City, Charger_type, Status, no_of_ports) VALUES (%s, %s, %s, %s, %s, %s)",
-                              (station_name, address, city, charger_type, 'Available', no_of_ports))
+                    db.insert("INSERT INTO admin_charging_station_list (Station_name, Address, City, Charger_type, Status, Available_ports ) VALUES (%s, %s, %s, %s, %s, %s)",
+                              (station_name, address, city, charger_type, 'Available', Available_ports))
             except Exception as db_e:
                 print(f"Database error: {db_e}")
 

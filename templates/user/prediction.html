@@ -1,285 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electric Vehicle Battery Range Predictor</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 10px;
-            padding: 10px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-        }
-        .form-group {
-            margin-bottom: 10px;
-        }
-        label {
-            display: block;
-            margin-bottom: 3px;
-            font-size: 14px;
-        }
-        input, select {
-            width: 100%;
-            padding: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        button {
-            padding: 8px 12px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .result {
-            margin-top: 15px;
-            padding: 8px;
-            background-color: #e2e3e5;
-            border: 1px solid #d6d8db;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EV Battery Range Predictor</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">  
+  <link rel="stylesheet" href="/static/index.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="icon" href="/static/temp/assets/images/icon.ico"/>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+
+ 
+
+  <style>
+    main {
+      padding: 40px 10%;
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+    }
+    h2.page-title {
+      font-weight: 600;
+      margin-bottom: 30px;
+      color: #2c3e50;
+      text-align: center;
+    }
+    form {
+      max-width: 600px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #34495e;
+    }
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input[type="number"]:focus,
+    select:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      background-color: #2980b9;
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2c3e50;;
+    }
+    .result {
+      margin-top: 25px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      color: #2c3e50;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+  </style>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-    <h1>Electric Vehicle Battery Range Predictor</h1>
-    <div class="form-group">
-        <label for="topSpeed">Top Speed (Km/h):</label>
-        <input type="number" id="topSpeed" required>
-    </div>
-    <div class="form-group">
-        <label for="acceleration">Acceleration (Sec):</label>
-        <input type="number" id="acceleration" required>
-    </div>
-    <div class="form-group">
-        <label for="efficiency">Efficiency (Wh/km):</label>
-        <input type="number" id="efficiency" required>
-    </div>
-    <div class="form-group">
-        <label for="seats">Number of Seats:</label>
-        <input type="number" id="seats" required>
-    </div>
-    <div class="form-group">
-        <label for="brand">Brand:</label>
-        <select id="brand" required>
-            <!-- Options will be populated dynamically -->
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="powerTrain">Power Train:</label>
-        <select id="powerTrain" required>
-            <!-- Options will be populated dynamically -->
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="bodyStyle">Body Style:</label>
-        <select id="bodyStyle" required>
-            <!-- Options will be populated dynamically -->
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="segment">Segment:</label>
-        <select id="segment" required>
-            <!-- Options will be populated dynamically -->
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="soc">State of Charge (%):</label>
-        <input type="number" id="soc" required>
-    </div>
-    <button onclick="predictRange()">Predict Battery Range</button>
+
+  <!-- HEADER -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">Electric Vehicle Services</div>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="cta">Home</a></li>
+        <li><a href="{{ url_for('about') }}" class="cta">About</a></li>
+        <li><a href="{{ url_for('contact_us') }}" class="cta">Contact</a></li>
+        <li><a href="{{ url_for('login') }}" class="cta">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <h2 class="page-title">Electric Vehicle Battery Range Predictor</h2>
+    <form id="predictForm" onsubmit="event.preventDefault(); predictRange();">
+      <label for="topSpeed">Top Speed (Km/h):</label>
+      <input type="number" id="topSpeed" required />
+
+      <label for="acceleration">Acceleration (Sec):</label>
+      <input type="number" id="acceleration" required />
+
+      <label for="efficiency">Efficiency (Wh/km):</label>
+      <input type="number" id="efficiency" required />
+
+      <label for="seats">Number of Seats:</label>
+      <input type="number" id="seats" required />
+
+      <label for="brand">Brand:</label>
+      <select id="brand" required></select>
+
+      <label for="powerTrain">Power Train:</label>
+      <select id="powerTrain" required></select>
+
+      <label for="bodyStyle">Body Style:</label>
+      <select id="bodyStyle" required></select>
+
+      <label for="segment">Segment:</label>
+      <select id="segment" required></select>
+
+      <label for="soc">State of Charge (%):</label>
+      <input type="number" id="soc" required min="0" max="100" />
+
+      <button type="submit">Predict Battery Range</button>
+    </form>
 
     <div class="result" id="result" style="display:none;"></div>
-    <div id="mapContainer" style="height: 500px; width: 100%;"></div>
 
-    <script>
-        let map; // Declare the map variable outside the function
+   
+  </main>
 
-        // Function to populate select options
-        async function populateOptions() {
-            const response = await fetch('/options'); // Endpoint to get options
-            const options = await response.json();
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <h3>Electric Vehicle Services</h3>
+      <p>Your one-stop solution for electric vehicle charging and assistance.</p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EV Project | Built by Team 84</p>
+    </div>
+  </footer>
 
-            const brandSelect = document.getElementById('brand');
-            const powerTrainSelect = document.getElementById('powerTrain');
-            const bodyStyleSelect = document.getElementById('bodyStyle');
-            const segmentSelect = document.getElementById('segment');
+  <script>
+    // Fill select options dynamically from backend
+    async function populateOptions() {
+      const response = await fetch('/options');
+      const options = await response.json();
 
-            options.brands.forEach(brand => {
-                const option = document.createElement('option');
-                option.value = brand;
-                option.textContent = brand;
-                brandSelect.appendChild(option);
-            });
+      function fillSelect(id, items) {
+        const select = document.getElementById(id);
+        items.forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item;
+          opt.textContent = item;
+          select.appendChild(opt);
+        });
+      }
 
-            options.powerTrains.forEach(powerTrain => {
-                const option = document.createElement('option');
-                option.value = powerTrain;
-                option.textContent = powerTrain;
-                powerTrainSelect.appendChild(option);
-            });
+      fillSelect('brand', options.brands);
+      fillSelect('powerTrain', options.powerTrains);
+      fillSelect('bodyStyle', options.bodyStyles);
+      fillSelect('segment', options.segments);
+    }
 
-            options.bodyStyles.forEach(bodyStyle => {
-                const option = document.createElement('option');
-                option.value = bodyStyle;
-                option.textContent = bodyStyle;
-                bodyStyleSelect.appendChild(option);
-            });
+    // Predict battery range
+    async function predictRange() {
+      const newData = {
+        topSpeed: parseFloat(document.getElementById('topSpeed').value),
+        acceleration: parseFloat(document.getElementById('acceleration').value),
+        efficiency: parseFloat(document.getElementById('efficiency').value),
+        seats: parseInt(document.getElementById('seats').value),
+        brand: document.getElementById('brand').value,
+        powerTrain: document.getElementById('powerTrain').value,
+        bodyStyle: document.getElementById('bodyStyle').value,
+        segment: document.getElementById('segment').value,
+        soc: parseFloat(document.getElementById('soc').value)
+      };
 
-            options.segments.forEach(segment => {
-                const option = document.createElement('option');
-                option.value = segment;
-                option.textContent = segment;
-                segmentSelect.appendChild(option);
-            });
-        }
-
-        async function predictRange() {
-            const topSpeed = document.getElementById('topSpeed').value;
-            const acceleration = document.getElementById('acceleration').value;
-            const efficiency = document.getElementById('efficiency').value;
-            const seats = document.getElementById('seats').value;
-            const brand = document.getElementById('brand').value;
-            const powerTrain = document.getElementById('powerTrain').value;
-            const bodyStyle = document.getElementById('bodyStyle').value;
-            const segment = document.getElementById('segment').value;
-            const soc = document.getElementById('soc').value;
-
-            const newData = {
-                topSpeed: parseFloat(topSpeed),
-                acceleration: parseFloat(acceleration),
-                efficiency: parseFloat(efficiency),
-                seats: parseInt(seats),
-                brand: brand,
-                powerTrain: powerTrain,
-                bodyStyle: bodyStyle,
-                segment: segment,
-                soc: parseFloat(soc)
-            };
-
-            // Send the data to the backend for prediction
-            try {
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newData)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'An error occurred');
-                }
-
-                const result = await response.json();
-                document.getElementById('result').innerHTML = `
-                    <strong>Battery Range:</strong> ${result.predictedRange.toFixed(2)} km<br>
-                    <strong>Remaining Battery Range at ${soc}% SoC:</strong> ${result.remainingRange.toFixed(2)} km
-                `;
-                document.getElementById('result').style.display = 'block';
-            } catch (error) {
-                document.getElementById('result').innerHTML = `
-                    <strong>Error:</strong> ${error.message}
-                `;
-                document.getElementById('result').style.display = 'block';
-            }
-        }
-
-        // Call populateOptions on page load
-        window.onload = populateOptions;
-
-        document.getElementById('findStationsButton').addEventListener('click', function() {
-            getCurrentLocation();
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newData),
         });
 
-        async function fetchNearbyStations(lat, lng) {
-            console.log(`Fetching nearby stations for lat: ${lat}, lng: ${lng}`);
-            
-            try {
-                const response = await fetch(`/stations?lat=${lat}&lng=${lng}&range=10`);
-                
-                console.log('Response status:', response.status); // Log the response status
-                
-                if (!response.ok) {
-                    const errorText = await response.text(); // Get the error response text
-                    console.error('Error response:', errorText); // Log the error response
-                    throw new Error('Network response was not ok');
-                }
-                
-                const data = await response.json();
-                console.log('Fetched stations data:', data); // Log the fetched data
-                displayStationsOnMap(data, lat, lng);
-            } catch (error) {
-                console.error('Error fetching nearby stations:', error);
-                alert('Failed to fetch nearby stations: ' + error.message);
-            }
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error in prediction');
         }
 
-        function displayStationsOnMap(stations, userLat, userLng) {
-            // Check if the map is already initialized
-            if (!map) {
-                // Initialize the map centered on the user's location
-                map = L.map('mapContainer').setView([userLat, userLng], 13);
+        const result = await response.json();
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+          <strong>Battery Range:</strong> ${result.predictedRange.toFixed(2)} km<br>
+          <strong>Remaining Range at ${newData.soc}% SoC:</strong> ${result.remainingRange.toFixed(2)} km
+        `;
+      } catch (err) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `<strong>Error:</strong> ${err.message}`;
+      }
+    }
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                }).addTo(map);
-            } else {
-                // If the map is already initialized, just set the view to the user's location
-                map.setView([userLat, userLng], 13);
-            }
+    // Initialize Leaflet map for charging stations
+    function initMap() {
+      const map = L.map('mapContainer').setView([20.5937, 78.9629], 5); // Centered in India
 
-            // Clear existing markers if needed
-            if (map.markers) {
-                map.markers.forEach(marker => map.removeLayer(marker));
-            } else {
-                map.markers = []; // Initialize markers array
-            }
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18,
+      }).addTo(map);
 
-            // Add a marker for the user's location (default red pointer)
-            L.marker([userLat, userLng]).addTo(map).bindPopup('Your Location').openPopup();
+      // Example: You can fetch charging station locations from your backend and add markers here
+      // Example static marker:
+      // L.marker([28.6139, 77.2090]).addTo(map).bindPopup('Sample Charging Station, Delhi');
 
-            // Add markers for each station (default blue pointers)
-            stations.forEach(station => {
-                const stationLat = station.AddressInfo.Latitude;
-                const stationLng = station.AddressInfo.Longitude;
-                const stationName = station.AddressInfo.Title;
+      return map;
+    }
 
-                L.marker([stationLat, stationLng]).addTo(map).bindPopup(stationName);
-            });
-        }
-
-        // Function to get the user's current location
-        function getCurrentLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-
-                    // Fetch nearby stations based on the current location
-                    fetchNearbyStations(lat, lng);
-                }, function() {
-                    alert('Unable to retrieve your location.');
-                });
-            } else {
-                alert('Geolocation is not supported by this browser.');
-            }
-        }
-
-        // Call getCurrentLocation when the page loads or when a button is clicked
-        document.addEventListener('DOMContentLoaded', getCurrentLocation); // Automatically fetch on page load
-    </script>
+    // On page load
+    window.onload = () => {
+      populateOptions();
+      initMap();
+    };
+  </script>
 </body>
 </html>
