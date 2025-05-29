@@ -522,16 +522,21 @@ def get_stations():
             no_of_ports = len(station.get('Connections', []))
 
             # Check if station already exists to avoid duplicates
-            existing = db.select("SELECT * FROM admin_charging_station_list WHERE Station_name = %s AND Address = %s", (station_name, address))
-            if not existing:
-                db.insert("INSERT INTO admin_charging_station_list (Station_name, Address, City, Charger_type, Status, no_of_ports) VALUES (%s, %s, %s, %s, %s, %s)",
-                          (station_name, address, city, charger_type, 'Available', no_of_ports))
+            try:
+                existing = db.select("SELECT * FROM admin_charging_station_list WHERE Station_name = %s AND Address = %s", (station_name, address))
+                if not existing:
+                    db.insert("INSERT INTO admin_charging_station_list (Station_name, Address, City, Charger_type, Status, no_of_ports) VALUES (%s, %s, %s, %s, %s, %s)",
+                              (station_name, address, city, charger_type, 'Available', no_of_ports))
+            except Exception as db_e:
+                print(f"Database error: {db_e}")
 
         return jsonify(stations)
     except requests.exceptions.RequestException as e:
+        print(f"Request exception: {e}")
         return jsonify({'error': str(e)}), 500
     except Exception as e:
-        return jsonify({'error': 'An error occurred while fetching stations.'}), 500
+        print(f"General exception: {e}")
+        return jsonify({'error': f'An error occurred while fetching stations: {str(e)}'}), 500
 
 @app.route('/directions', methods=['GET'])
 def get_directions():
