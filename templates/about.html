@@ -1,60 +1,75 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">   
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - EV Charging Station</title>
+
+  <!-- External Styles & Icons -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">  
   <link rel="stylesheet" href="/static/about.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel=" icon" href="/static/temp/assets/images/icon.ico"/>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="icon" href="/static/temp/assets/images/icon.ico"/>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-     <!-- <link rel="stylesheet" href="user-login dashboard.js"> -->
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
 </head>
-<!-- HEADER SECTION -->
 
+<body>
+  <!-- HEADER -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">Electric Vehicle Services</div>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="cta">Home</a></li>
 
-<header>
-  <nav>
+        <li><a href="{{ url_for('contact_us') }}" class="cta">Contact</a></li>
+        <li><a href="{{ url_for('login') }}" class="cta">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ABOUT SECTION -->
+  <section class="about">
+    <h3>About EV Charging Prediction</h3>
+    <p>Our platform helps EV owners predict their vehicle’s driving range based on key factors like:</p>
     <ul>
-      <li><a href="{{ url_for('home') }}">Home</a></li>
-      <!-- <li><a href="{{ url_for('find_your_charger') }}">Find your charger</a></li> -->
-      <li><a href="{{ url_for('about') }}">About</a></li>
-      <li><a href="{{ url_for('contact_us') }}">Contact us</a></li>
-      <li><a href="{{ url_for('login') }}" class="cta">Login</a></li>
-  </ul>
-  </nav>
-  
-  
-</header>
+      <li>Top Speed (Km/h)</li>
+      <li>Acceleration (Sec)</li>
+      <li>Efficiency (Wh/km)</li>
+      <li>Number of Seats</li>
+      <li>Brand & Power Train</li>
+      <li>Body Style & Segment</li>
+      <li>State of Charge (%)</li>
+    </ul>
+    <p>Using these parameters, we predict how far your EV can go on its current charge with improved accuracy and real-time updates.</p>
 
-    <main>
-        <h1>About EV Charge Range Prediction</h1>
-        <p>Our platform helps EV owners estimate their vehicle’s driving range based on key factors such as:
+    <h3>Nearby Charging Station Locator</h3>
+    <p>Integrated with OpenChargeMap API, our locator helps users find the nearest EV charging stations based on:</p>
+    <ul>
+      <li>Real-time user location</li>
+      <li>Live station availability</li>
+      <li>Navigation assistance</li>
+    </ul>
 
-          Top Speed (Km/h) ,Acceleration (Sec) ,Efficiency (Wh/km) ,Number of Seats,Brand & Power Train ,Body Style & Segment ,State of Charge (%)
-          By analyzing these factors, our prediction model provides an accurate estimate of how far your EV can travel on its current charge.</p>
-        <h2>Locating Nearby EV Charging Stations</h2>
-        <p>To ensure you never run out of charge, we integrate with OpenChargeMap, a global EV charging station database. This feature allows you to:
-          Gets your current location automatically.Find nearby charging stations based on real-time data,Get directions to the nearest charging station.</p>
-        <h2>Book EV Charging Services</h2>
-        <p>We make EV charging more convenient by offering a booking service where users can:
-          Select a city and find charging stations.
-          Choose a charging type (Fast, Slow, DC, AC, etc.).
-          Reserve a charging slot to avoid wait times.</p>
-      </main>
+    <h3>Charging Service Booking</h3>
+    <p>With our smart booking feature, users can:</p>
+    <ul>
+      <li>Select city-specific stations</li>
+      <li>Choose charging type (Fast, Slow, DC, AC)</li>
+      <li>Reserve slots to avoid waiting</li>
+    </ul>
+  </section>
 
-
-
-
-
-
-
-
-
-
-
-
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <h3>Electric Vehicle Services</h3>
+      <p>Your one-stop solution for electric vehicle charging and assistance.</p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EV Project | Built by Team 84</p>
+    </div>
+  </footer>
+</body>
+</html>

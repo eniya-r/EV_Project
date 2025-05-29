@@ -1,297 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Map - Nearby EV Charging Stations</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #mapContainer {
-            height: 100vh;
-            width: 100%;
-        }
-        #directionsPanel {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 90%;
-            max-height: 150px;
-            overflow-y: auto;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            z-index: 1001;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            border: 1px solid #ccc;
-        }
-        .direction-step {
-            margin: 5px 0;
-            padding: 5px;
-            border-left: 4px solid #28a745; /* Green color for the border */
-            background-color: #f9f9f9; /* Light background */
-        }
-        .direction-symbol {
-            font-weight: bold;
-            margin-right: 5px;
-        }
-        .estimated-time {
-            font-weight: bold;
-            color: #007bff; /* Blue color for estimated time */
-        }
-        #stationButtons {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            gap: 10px;
-        }
-        .station-btn {
-            background-color: #28a745; /* Bootstrap green */
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nearby EV Charging Stations</title>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/index.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="icon" href="/static/temp/assets/images/icon.ico"/>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    #mapContainer {
+      height: 75vh;
+      width: 75vh;
+    }
+
+
+    #directionsPanel {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 90%;
+      max-height: 150px;
+      overflow-y: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 1001;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 14px;
+      border: 1px solid #ccc;
+    }
+
+    .direction-step {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 4px solid #28a745;
+      background-color: #f9f9f9;
+    }
+
+    .estimated-time {
+      font-weight: bold;
+      color: #2C3E50;
+    }
+
+    .hero-map {
+      background: linear-gradient(to right, #2C3E50, #6dd5fa);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero-map h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    .station-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- HEADER -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">Electric Vehicle Services</div>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="cta">Home</a></li>
+        <li><a href="{{ url_for('about') }}" class="cta">About</a></li>
+        <li><a href="{{ url_for('contact_us') }}" class="cta">Contact</a></li>
+    
+      </ul>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero-map">
+    <h1>Nearby EV Charging Stations</h1>
+  </section>
+
+  <!-- MAP -->
+  <!-- MAP -->
+<div style="display: flex; justify-content: center; align-items: center; height: 75vh;">
     <div id="mapContainer"></div>
-    <div id="directionsPanel"></div>
-    <!-- Removed separate buttons container div -->
+  </div>
+  
 
-    <script>
-        let map;
-        let userLatLng;
-        let selectedStationLatLng;
-        let selectedStationName;
-        let selectedStationCity;
-        let selectedStationAvailablePorts;
-        let routeLayer;
+  <!-- Directions Panel -->
+  <div id="directionsPanel"></div>
 
-        function initMap() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    userLatLng = [lat, lng];
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <h3>Electric Vehicle Services</h3>
+      <p>Your one-stop solution for electric vehicle charging and assistance.</p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EV Project | Built by Team 84</p>
+    </div>
+  </footer>
 
-                    map = L.map('mapContainer').setView(userLatLng, 13);
+  <!-- JS Logic -->
+  <script>
+    let map, userLatLng, selectedStationLatLng, selectedStationName, selectedStationCity, selectedStationAvailablePorts, routeLayer;
 
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                    }).addTo(map);
+    function initMap() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          userLatLng = [lat, lng];
+          map = L.map('mapContainer').setView(userLatLng, 13);
 
-                    const userIcon = L.divIcon({
-                        html: '<div style="width: 16px; height: 16px; background: red; border-radius: 50%; border: 2px solid white;"></div>',
-                        className: '',
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8]
-                    });
-                    L.marker(userLatLng, {icon: userIcon}).addTo(map).bindPopup('Your Location').openPopup();
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+          }).addTo(map);
 
-                    fetchNearbyStations(lat, lng);
-                }, function() {
-                    alert('Unable to retrieve your location.');
-                });
-            } else {
-                alert('Geolocation is not supported by this browser.');
-            }
-        }
+          const userIcon = L.divIcon({
+            html: '<div style="width: 16px; height: 16px; background: red; border-radius: 50%; border: 2px solid white;"></div>',
+            className: '',
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+          });
+          L.marker(userLatLng, { icon: userIcon }).addTo(map).bindPopup('Your Location').openPopup();
 
-        async function fetchNearbyStations(lat, lng) {
-            try {
-                const response = await fetch(`/stations?lat=${lat}&lng=${lng}&range=10`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                displayStationsOnMap(data);
-            } catch (error) {
-                console.error('Error fetching nearby stations:', error);
-                alert('Failed to fetch nearby stations: ' + error.message);
-            }
-        }
+          fetchNearbyStations(lat, lng);
+        }, () => alert('Unable to retrieve your location.'));
+      } else {
+        alert('Geolocation is not supported by this browser.');
+      }
+    }
 
-        function displayStationsOnMap(stations) {
-            if (map.markers) {
-                map.markers.forEach(marker => map.removeLayer(marker));
-            } else {
-                map.markers = [];
-            }
+    async function fetchNearbyStations(lat, lng) {
+      try {
+        const response = await fetch(`/stations?lat=${lat}&lng=${lng}&range=10`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        displayStationsOnMap(data);
+      } catch (error) {
+        console.error('Error fetching nearby stations:', error);
+        alert('Failed to fetch nearby stations: ' + error.message);
+      }
+    }
 
-            stations.forEach(station => {
-                const stationLat = station.AddressInfo.Latitude;
-                const stationLng = station.AddressInfo.Longitude;
-                const stationName = station.AddressInfo.Title;
-                const stationCity = station.AddressInfo.Town || '';
-                const availablePorts = station.NumberOfPoints || 1;
+    function displayStationsOnMap(stations) {
+      map.markers = map.markers || [];
+      map.markers.forEach(marker => map.removeLayer(marker));
+      map.markers = [];
 
-                const popupContent = `
-                    <div>
-                        <strong>${stationName}</strong><br/>
-                        <button class="btnDirections" style="background-color: #28a745; color: white; border: none; padding: 5px 10px; margin-right: 5px; border-radius: 3px; cursor: pointer;">Directions</button>
-                        <button class="btnBookSlot" style="background-color: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Book a Slot</button>
-                    </div>
-                `;
+      stations.forEach(station => {
+        const { Latitude, Longitude, Title, Town } = station.AddressInfo;
+        const availablePorts = station.NumberOfPoints || 1;
 
-                const stationMarker = L.marker([stationLat, stationLng]).addTo(map).bindPopup(popupContent);
+        const popupContent = `
+          <div>
+            <strong>${Title}</strong><br/>
+            <button class="btnDirections station-btn" style="margin-top: 5px;">Directions</button>
+            <button class="btnBookSlot station-btn" style="margin-top: 5px;">Book a Slot</button>
+          </div>
+        `;
 
-                stationMarker.on('popupopen', function(e) {
-                    selectedStationLatLng = [stationLat, stationLng];
-                    selectedStationName = stationName;
-                    selectedStationCity = stationCity;
-                    selectedStationAvailablePorts = availablePorts;
+        const stationMarker = L.marker([Latitude, Longitude]).addTo(map).bindPopup(popupContent);
 
-                    const popupNode = e.popup.getElement();
+        stationMarker.on('popupopen', e => {
+          selectedStationLatLng = [Latitude, Longitude];
+          selectedStationName = Title;
+          selectedStationCity = Town || '';
+          selectedStationAvailablePorts = availablePorts;
 
-                    const btnDirections = popupNode.querySelector('.btnDirections');
-                    const btnBookSlot = popupNode.querySelector('.btnBookSlot');
+          const popupNode = e.popup.getElement();
+          const btnDirections = popupNode.querySelector('.btnDirections');
+          const btnBookSlot = popupNode.querySelector('.btnBookSlot');
 
-                    if (btnDirections) {
-                        btnDirections.addEventListener('click', () => {
-                            getDirections();
-                        });
-                    }
+          if (btnDirections) btnDirections.addEventListener('click', getDirections);
+          if (btnBookSlot) btnBookSlot.addEventListener('click', () => {
+            const url = `/booking-form?Station_name=${encodeURIComponent(Title)}&City=${encodeURIComponent(Town || '')}&Available_ports=${encodeURIComponent(availablePorts)}`;
+            window.location.href = url;
+          });
+        });
 
-                    if (btnBookSlot) {
-                        btnBookSlot.addEventListener('click', () => {
-                            const url = `/booking-form?Station_name=${encodeURIComponent(selectedStationName)}&City=${encodeURIComponent(selectedStationCity)}&Available_ports=${encodeURIComponent(selectedStationAvailablePorts)}`;
-                            window.location.href = url;
-                        });
-                    }
-                });
+        map.markers.push(stationMarker);
+      });
+    }
 
-                map.markers.push(stationMarker);
-            });
-        }
+    async function getDirections() {
+      if (!userLatLng || !selectedStationLatLng) return alert('Location data incomplete.');
+      const [start_lat, start_lng] = userLatLng;
+      const [end_lat, end_lng] = selectedStationLatLng;
 
-        function showStationButtons() {
-            const btnContainer = document.getElementById('stationButtons');
-            btnContainer.style.display = 'flex';
-        }
+      try {
+        const response = await fetch(`/directions?start_lat=${start_lat}&start_lng=${start_lng}&end_lat=${end_lat}&end_lng=${end_lng}`);
+        if (!response.ok) throw new Error('Failed to fetch directions');
+        const data = await response.json();
+        displayRoute(data);
+        displayDirectionsText(data);
+      } catch (error) {
+        console.error('Error fetching directions:', error);
+        alert('Failed to fetch directions: ' + error.message);
+      }
+    }
 
-        function hideStationButtons() {
-            const btnContainer = document.getElementById('stationButtons');
-            btnContainer.style.display = 'none';
-        }
+    function displayRoute(data) {
+      if (routeLayer) map.removeLayer(routeLayer);
+      if (!data?.features?.length) return alert('No route found');
 
-        async function getDirections() {
-            if (!userLatLng) {
-                alert('User location not available.');
-                return;
-            }
-            if (!selectedStationLatLng) {
-                alert('Please select a station marker first.');
-                return;
-            }
+      const latlngs = data.features[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+      routeLayer = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+      map.fitBounds(routeLayer.getBounds());
+    }
 
-            const start_lat = userLatLng[0];
-            const start_lng = userLatLng[1];
-            const end_lat = selectedStationLatLng[0];
-            const end_lng = selectedStationLatLng[1];
+    function displayDirectionsText(data) {
+      const panel = document.getElementById('directionsPanel');
+      panel.innerHTML = '';
+      const segment = data?.features?.[0]?.properties?.segments?.[0];
+      if (!segment) return panel.innerHTML = '<p>No directions available.</p>';
 
-            try {
-                const response = await fetch(`/directions?start_lat=${start_lat}&start_lng=${start_lng}&end_lat=${end_lat}&end_lng=${end_lng}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch directions');
-                }
-                const data = await response.json();
-                displayRoute(data);
-                displayDirectionsText(data);
-            } catch (error) {
-                console.error('Error fetching directions:', error);
-                alert('Failed to fetch directions: ' + error.message);
-            }
-        }
+      const totalTime = `${Math.floor(segment.duration / 60)} min ${Math.floor(segment.duration % 60)} sec`;
+      const totalDistance = `${(segment.distance / 1000).toFixed(2)} km`;
+      panel.innerHTML += `<p style="font-weight: bold; font-size: 16px; margin-bottom: 10px;">Estimated time: <span class="estimated-time">${totalTime}</span> | Total distance: ${totalDistance}</p>`;
 
-        function displayRoute(data) {
-            if (routeLayer) {
-                map.removeLayer(routeLayer);
-            }
-            if (!data || !data.features || data.features.length === 0) {
-                alert('No route found');
-                return;
-            }
-            const coords = data.features[0].geometry.coordinates;
-            const latlngs = coords.map(coord => [coord[1], coord[0]]);
+      segment.steps.forEach((step, index) => {
+        const symbol = getDirectionSymbol(step);
+        panel.innerHTML += `<p class="direction-step">${symbol} ${index + 1}. ${step.instruction} (${step.distance.toFixed(1)} m)</p>`;
+      });
+    }
 
-            routeLayer = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-            map.fitBounds(routeLayer.getBounds());
-        }
+    function getDirectionSymbol(step) {
+      const type = step.maneuver?.type || '';
+      const mod = step.maneuver?.modifier || '';
+      const icons = {
+        right: '➡️', left: '⬅️', 'sharp right': '↘️', 'sharp left': '↙️',
+        'slight right': '↗️', 'slight left': '↖️', uturn: '⬇️',
+        depart: '⬆️', arrive: '⬆️', continue: '⬆️',
+        merge: '🔀', fork: '⛏️', roundabout: '⭯'
+      };
+      return type === 'turn' ? icons[mod] || '➡️' : icons[type] || '';
+    }
 
-        function displayDirectionsText(data) {
-            const panel = document.getElementById('directionsPanel');
-            panel.innerHTML = '';
-            if (!data || !data.features || data.features.length === 0) {
-                panel.innerHTML = '<p>No directions available.</p>';
-                return;
-            }
-            const segment = data.features[0].properties.segments[0];
-            const steps = segment.steps;
-
-            // Show total estimated time and distance
-            const totalTimeSec = segment.duration;
-            const totalDistanceM = segment.distance;
-            const minutes = Math.floor(totalTimeSec / 60);
-            const seconds = Math.floor(totalTimeSec % 60);
-            const km = (totalDistanceM / 1000).toFixed(2);
-            const timeStr = `Estimated time: <span class="estimated-time">${minutes} min ${seconds} sec</span> | Total distance: ${km} km`;
-            const timeP = document.createElement('p');
-            timeP.style.fontWeight = 'bold';
-            timeP.style.fontSize = '16px';
-            timeP.style.marginBottom = '10px';
-            timeP.innerHTML = timeStr;
-            panel.appendChild(timeP);
-
-            steps.forEach((step, index) => {
-                const p = document.createElement('p');
-                const directionSymbol = getDirectionSymbol(step);
-                p.className = 'direction-step';
-                p.innerHTML = `${directionSymbol} ${index + 1}. ${step.instruction} (${step.distance.toFixed(1)} m)`;
-                panel.appendChild(p);
-            });
-        }
-
-        function getDirectionSymbol(step) {
-            if (!step.maneuver) return '';
-            const type = step.maneuver.type || '';
-            const modifier = step.maneuver.modifier || '';
-
-            if (type === 'turn') {
-                switch (modifier) {
-                    case 'right': return '➡️';
-                    case 'left': return '⬅️';
-                    case 'sharp right': return '↘️';
-                    case 'sharp left': return '↙️';
-                    case 'slight right': return '↗️';
-                    case 'slight left': return '↖️';
-                    case 'uturn': return '⬇️';
-                    default: return '➡️';
-                }
-            } else if (type === 'depart' || type === 'arrive' || type === 'continue') {
-                return '⬆️';
-            } else if (type === 'merge') {
-                return '🔀';
-            } else if (type === 'fork') {
-                return '⛏️';
-            } else if (type === 'roundabout') {
-                return '⭯';
-            }
-            return '';
-        }
-
-        // Removed global event listeners for btnDirections and btnBookSlot as they are handled inside popupopen event
-
-        window.onload = function() {
-            initMap();
-        };
-    </script>
+    window.onload = initMap;
+  </script>
 </body>
 </html>

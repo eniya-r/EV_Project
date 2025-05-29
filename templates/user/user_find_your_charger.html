@@ -1,76 +1,81 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">  
-  <!-- HEADER SECTION -->
-  <link rel="stylesheet" href="/static/user/find-your-charger.css" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel=" icon" href="/static/temp/assets/images/icon.ico"/>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Find Your Charger</title>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-     <!-- <link rel="stylesheet" href="user-login dashboard.js"> -->
+  <!-- External Styles & Icons -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="/static/user/find-your-charger.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="icon" href="/static/temp/assets/images/icon.ico"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
 </head>
 
+<body>
+  <!-- HEADER -->
   <header>
-    <nav>
-      <ul>
-        <li><a href="{{ url_for('home') }}">Home</a></li>
-        <!-- <li><a href="{{ url_for('user_find_your_charger') }}">Find your charger</a></li> -->
-        <li><a href="{{ url_for('about') }}">About</a></li>
-        <li><a href="{{ url_for('contact_us') }}">Contact us</a></li>
-    </ul>
+    <nav class="navbar">
+      <div class="logo">Electric Vehicle Services</div>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="cta">Home</a></li>
+        <li><a href="{{ url_for('about') }}" class="cta">About</a></li>
+        <li><a href="{{ url_for('contact_us') }}" class="cta">Contact</a></li>
+      </ul>
     </nav>
-    
-    
-</header>
+  </header>
 
-  <main>
-    <!-- BODY SECTION -->
+  <!-- MAIN CONTENT -->
+  <main class="find-container">
+    <h2>Find Your Charge Point</h2>
+    <form action="{{ url_for('station_search') }}" method="get" class="find-form">
+      <label for="City">Select a City:</label>
+      <select id="City" name="City" required>
+        <option value="">--Select a City--</option>
+        <option value="Bengaluru">Bengaluru</option>
+        <option value="Mysuru">Mysuru</option>
+        <option value="Mangaluru">Mangaluru</option>
+        <option value="Hubballi">Hubballi</option>
+        <option value="Dharwad">Dharwad</option>
+        <option value="Belagavi">Belagavi</option>
+        <option value="Shivamogga">Shivamogga</option>
+        <option value="Ballari">Ballari</option>
+        <option value="Kalaburagi">Kalaburagi</option>
+        <option value="Davangere">Davangere</option>
+        <option value="Tumakuru">Tumakuru</option>
+        <option value="Vijayapura">Vijayapura</option>
+        <option value="Udupi">Udupi</option>
+        <option value="Hassan">Hassan</option>
+        <option value="Chikkamagaluru">Chikkamagaluru</option>
+        <option value="Bagalkot">Bagalkot</option>
+        <option value="Bidar">Bidar</option>
+        <option value="Raichur">Raichur</option>
+        <option value="Kolar">Kolar</option>
+        <option value="Chitradurga">Chitradurga</option>
+      </select>
 
-    <div class="container">
-      
-      <h1>Find Your Charge Point</h1>
-      <form action="{{ url_for('station_search') }}" method="get">
-        <label for="City">Select a City: </label>
-        <select id="City" name="City" required>
-          <option value="">--Select a City--</option>
-          <option value="Bengaluru">Bengaluru</option>
-          <option value="Mysuru">Mysuru</option>
-          <option value="Mangaluru">Mangaluru</option>
-          <option value="Hubballi">Hubballi</option>
-          <option value="Dharwad">Dharwad</option>
-          <option value="Belagavi">Belagavi</option>
-          <option value="Shivamogga">Shivamogga</option>
-          <option value="Ballari">Ballari</option>
-          <option value="Kalaburagi">Kalaburagi</option>
-          <option value="Davangere">Davangere</option>
-          <option value="Tumakuru">Tumakuru</option>
-          <option value="Vijayapura">Vijayapura</option>
-          <option value="Udupi">Udupi</option>
-          <option value="Hassan">Hassan</option>
-          <option value="Chikkamagaluru">Chikkamagaluru</option>
-          <option value="Bagalkot">Bagalkot</option>
-          <option value="Bidar">Bidar</option>
-          <option value="Raichur">Raichur</option>
-          <option value="Kolar">Kolar</option>
-          <option value="Chitradurga">Chitradurga</option>
-        </select>
-        <br />
-        <br>
-        <label for="Charger_type">Select Charging Type:</label>
-        <select name="Charger_type" id="Charger_type" required>
-          <option value="">--Select--</option>
-          <option value="AC Level 1 Charging">AC Level 1 Charging</option>
-          <option value="AC Level 2 Charging">AC Level 2 Charging</option>
-          <option value="DC Fast Charging">DC Fast Charging</option>
-        </select>
-        <br />
-        <button type="submit">Search</button>
-      </form>
+      <label for="Charger_type">Select Charging Type:</label>
+      <select name="Charger_type" id="Charger_type" required>
+        <option value="">--Select--</option>
+        <option value="AC Level 1 Charging">AC Level 1 Charging</option>
+        <option value="AC Level 2 Charging">AC Level 2 Charging</option>
+        <option value="DC Fast Charging">DC Fast Charging</option>
+      </select>
+
+      <button type="submit" class="cta">Search</button>
+    </form>
   </main>
 
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <h3>Electric Vehicle Services</h3>
+      <p>Your one-stop solution for electric vehicle charging and assistance.</p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EV Project | Built by Team 84</p>
+    </div>
+  </footer>
+</body>
+</html>
